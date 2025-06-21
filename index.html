@@ -472,6 +472,25 @@
             animation: slideIn 0.3s ease;
         }
 
+        .leaderboard {
+            margin-top: 30px;
+        }
+
+        .leaderboard-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -609,6 +628,10 @@
                     <h4 id="historyTitle">📜 Historique récent</h4>
                     <div id="historyList" class="history-list"></div>
                 </div>
+                <div class="leaderboard">
+                    <h4 id="leaderboardTitle">🏅 Classement XP</h4>
+                    <ol id="leaderboardList" class="leaderboard-list"></ol>
+                </div>
             </div>
 
             <!-- Marriage Section -->
@@ -667,6 +690,7 @@
                 peaceLabel: "Pays en paix",
                 marriagesLabel: "Mariages célébrés",
                 topCountryLabel: "Pays le plus fort",
+                leaderboardTitle: "🏅 Classement XP",
                 historyTitle: "📜 Historique récent",
                 warDeclared: "{country1} déclare la guerre à {country2} ⚔️",
                 peaceMade: "{country1} fait la paix avec {country2} 🕊️",
@@ -706,6 +730,7 @@
                 peaceLabel: "دول في سلام",
                 marriagesLabel: "زيجات تمت",
                 topCountryLabel: "أقوى دولة",
+                leaderboardTitle: "🏅 الترتيب",
                 historyTitle: "📜 التاريخ الحديث",
                 warDeclared: "{country1} يعلن الحرب على {country2} ⚔️",
                 peaceMade: "{country1} يصنع السلام مع {country2} 🕊️",
@@ -745,6 +770,7 @@
                 peaceLabel: "Países en paz",
                 marriagesLabel: "Matrimonios celebrados",
                 topCountryLabel: "País más fuerte",
+                leaderboardTitle: "🏅 Clasificación",
                 historyTitle: "📜 Historia reciente",
                 warDeclared: "{country1} declara guerra a {country2} ⚔️",
                 peaceMade: "{country1} hace la paz con {country2} 🕊️",
@@ -784,6 +810,7 @@
                 peaceLabel: "Paesi in pace",
                 marriagesLabel: "Matrimoni celebrati",
                 topCountryLabel: "Paese più forte",
+                leaderboardTitle: "🏅 Classifica",
                 historyTitle: "📜 Storia recente",
                 warDeclared: "{country1} dichiara guerra a {country2} ⚔️",
                 peaceMade: "{country1} fa la pace con {country2} 🕊️",
@@ -823,6 +850,7 @@
                 peaceLabel: "Countries at peace",
                 marriagesLabel: "Marriages celebrated",
                 topCountryLabel: "Strongest country",
+                leaderboardTitle: "🏅 Leaderboard",
                 historyTitle: "📜 Recent history",
                 warDeclared: "{country1} declares war on {country2} ⚔️",
                 peaceMade: "{country1} makes peace with {country2} 🕊️",
@@ -955,7 +983,8 @@
             countriesList: document.getElementById('countriesList'),
             selectedCountries: document.getElementById('selectedCountries'),
             marriageMessage: document.getElementById('marriageMessage'),
-            eventMessage: document.getElementById('eventMessage')
+            eventMessage: document.getElementById('eventMessage'),
+            leaderboardList: document.getElementById('leaderboardList')
         };
 
         // Translation function
@@ -988,6 +1017,7 @@
             document.getElementById('peaceLabel').textContent = t('peaceLabel');
             document.getElementById('marriagesLabel').textContent = t('marriagesLabel');
             document.getElementById('topCountryLabel').textContent = t('topCountryLabel');
+            document.getElementById('leaderboardTitle').textContent = t('leaderboardTitle');
             document.getElementById('historyTitle').textContent = t('historyTitle');
             
             // Update countries list if game is active
@@ -1175,6 +1205,18 @@
                 item.textContent = event.text;
                 historyList.appendChild(item);
             });
+
+            // Update leaderboard
+            elements.leaderboardList.innerHTML = '';
+            [...gameState.countries]
+                .sort((a, b) => b.xp - a.xp)
+                .slice(0, 5)
+                .forEach((country, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'leaderboard-item';
+                    li.textContent = `${index + 1}. ${country.emoji} ${country.name} - ${country.xp} XP`;
+                    elements.leaderboardList.appendChild(li);
+                });
         }
 
         // Toggle war/peace
