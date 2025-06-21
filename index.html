@@ -293,6 +293,12 @@
             color: var(--success);
         }
 
+        .status-elim {
+            background: rgba(0, 0, 0, 0.1);
+            color: var(--text-secondary);
+            text-decoration: line-through;
+        }
+
         /* Marriage Section */
         .marriage-section {
             text-align: center;
@@ -316,6 +322,12 @@
 
         /* Random Event */
         .random-event {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        /* Battle Royale */
+        .battle-royale {
             text-align: center;
             margin: 30px 0;
         }
@@ -648,6 +660,12 @@
                 <div id="eventMessage" class="event-message"></div>
             </div>
 
+            <!-- Battle Royale -->
+            <div class="battle-royale card">
+                <button class="btn btn-danger" id="battleRoyaleBtn">Bataille Royale</button>
+                <div id="battleRoyaleResult" class="event-message"></div>
+            </div>
+
             <!-- Countries List -->
             <div class="countries-container" id="countriesList"></div>
         </div>
@@ -694,7 +712,10 @@
                 historyTitle: "📜 Historique récent",
                 warDeclared: "{country1} déclare la guerre à {country2} ⚔️",
                 peaceMade: "{country1} fait la paix avec {country2} 🕊️",
-                marriageCelebrated: "Mariage célébré : {country1} 💑 {country2}"
+                marriageCelebrated: "Mariage célébré : {country1} 💑 {country2}",
+                startBattleRoyale: "Lancer la Bataille Royale",
+                eliminated: "{country} éliminé",
+                battleRoyaleWinner: "{country} gagne la Bataille Royale ! 🎉",
             },
             ar: {
                 gameTitle: "حرب البلدان",
@@ -734,7 +755,10 @@
                 historyTitle: "📜 التاريخ الحديث",
                 warDeclared: "{country1} يعلن الحرب على {country2} ⚔️",
                 peaceMade: "{country1} يصنع السلام مع {country2} 🕊️",
-                marriageCelebrated: "زواج تم : {country1} 💑 {country2}"
+                marriageCelebrated: "زواج تم : {country1} 💑 {country2}",
+                startBattleRoyale: "ابدأ المعركة الملكية",
+                eliminated: "تم إقصاء {country}",
+                battleRoyaleWinner: "{country} يفوز بالمعركة الملكية! 🎉"
             },
             es: {
                 gameTitle: "Guerra de Países",
@@ -774,7 +798,10 @@
                 historyTitle: "📜 Historia reciente",
                 warDeclared: "{country1} declara guerra a {country2} ⚔️",
                 peaceMade: "{country1} hace la paz con {country2} 🕊️",
-                marriageCelebrated: "Matrimonio celebrado: {country1} 💑 {country2}"
+                marriageCelebrated: "Matrimonio celebrado: {country1} 💑 {country2}",
+                startBattleRoyale: "Iniciar Batalla Real",
+                eliminated: "{country} eliminado",
+                battleRoyaleWinner: "¡{country} gana la Batalla Real! 🎉"
             },
             it: {
                 gameTitle: "Guerra dei Paesi",
@@ -814,7 +841,10 @@
                 historyTitle: "📜 Storia recente",
                 warDeclared: "{country1} dichiara guerra a {country2} ⚔️",
                 peaceMade: "{country1} fa la pace con {country2} 🕊️",
-                marriageCelebrated: "Matrimonio celebrato: {country1} 💑 {country2}"
+                marriageCelebrated: "Matrimonio celebrato: {country1} 💑 {country2}",
+                startBattleRoyale: "Avvia Battle Royale",
+                eliminated: "{country} eliminato",
+                battleRoyaleWinner: "{country} vince la Battle Royale! 🎉"
             },
             en: {
                 gameTitle: "War of Countries",
@@ -854,7 +884,10 @@
                 historyTitle: "📜 Recent history",
                 warDeclared: "{country1} declares war on {country2} ⚔️",
                 peaceMade: "{country1} makes peace with {country2} 🕊️",
-                marriageCelebrated: "Marriage celebrated: {country1} 💑 {country2}"
+                marriageCelebrated: "Marriage celebrated: {country1} 💑 {country2}",
+                startBattleRoyale: "Start Battle Royale",
+                eliminated: "{country} eliminated",
+                battleRoyaleWinner: "{country} wins the Battle Royale! 🎉"
             }
         };
 
@@ -942,7 +975,8 @@
                 id: index,
                 xp: Math.floor(Math.random() * 100),
                 status: 'peace',
-                selected: false
+                selected: false,
+                eliminated: false
             })),
             selectedForMarriage: [],
             statistics: {
@@ -984,6 +1018,8 @@
             selectedCountries: document.getElementById('selectedCountries'),
             marriageMessage: document.getElementById('marriageMessage'),
             eventMessage: document.getElementById('eventMessage'),
+            battleRoyaleBtn: document.getElementById('battleRoyaleBtn'),
+            battleRoyaleResult: document.getElementById('battleRoyaleResult'),
             leaderboardList: document.getElementById('leaderboardList')
         };
 
@@ -1010,6 +1046,7 @@
             elements.marriageTitle.textContent = t('marriageTitle');
             elements.marryBtn.textContent = t('marryCountries');
             elements.randomEventBtn.textContent = t('randomEvent');
+            elements.battleRoyaleBtn.textContent = t('startBattleRoyale');
             
             // Update statistics labels
             document.getElementById('statsTitle').textContent = t('statsTitle');
@@ -1144,15 +1181,23 @@
                     countryCard.style.border = '2px solid #34C759';
                 }
                 
-                const statusClass = country.status === 'war' ? 'status-war' : 'status-peace';
-                const statusText = country.status === 'war' ? t('war') : t('peace');
-                const actionBtn = country.status === 'war' ? 
-                    `<button class="btn btn-success btn-small" onclick="toggleWarPeace(${country.id})">${t('makePeace')}</button>` :
-                    `<button class="btn btn-danger btn-small" onclick="toggleWarPeace(${country.id})">${t('declareWar')}</button>`;
-                
-                const selectBtn = country.selected ? 
-                    `<button class="btn btn-primary btn-small" onclick="toggleMarriageSelection(${country.id})">${t('selected')}</button>` :
-                    `<button class="btn btn-primary btn-small" onclick="toggleMarriageSelection(${country.id})">${t('select')}</button>`;
+            const statusClass = country.eliminated
+                ? 'status-elim'
+                : (country.status === 'war' ? 'status-war' : 'status-peace');
+            const statusText = country.eliminated
+                ? t('eliminated', {country: ''}).trim()
+                : (country.status === 'war' ? t('war') : t('peace'));
+            const actionBtn = country.eliminated ? '' : (
+                country.status === 'war'
+                    ? `<button class="btn btn-success btn-small" onclick="toggleWarPeace(${country.id})">${t('makePeace')}</button>`
+                    : `<button class="btn btn-danger btn-small" onclick="toggleWarPeace(${country.id})">${t('declareWar')}</button>`
+            );
+
+            const selectBtn = country.eliminated ? '' : (
+                country.selected
+                    ? `<button class="btn btn-primary btn-small" onclick="toggleMarriageSelection(${country.id})">${t('selected')}</button>`
+                    : `<button class="btn btn-primary btn-small" onclick="toggleMarriageSelection(${country.id})">${t('select')}</button>`
+            );
                 
                 countryCard.innerHTML = `
                     <div class="country-info">
@@ -1368,6 +1413,36 @@
             }, 5000);
         });
 
+        // Battle Royale
+        elements.battleRoyaleBtn.addEventListener('click', () => {
+            let alive = gameState.countries.filter(c => !c.eliminated);
+            if (alive.length < 2) return;
+            elements.battleRoyaleResult.textContent = t('startBattleRoyale');
+            const interval = setInterval(() => {
+                if (alive.length <= 1) {
+                    clearInterval(interval);
+                    const winner = alive[0];
+                    elements.battleRoyaleResult.textContent = t('battleRoyaleWinner', {country: winner.name});
+                    gameState.statistics.warHistory.push({
+                        timestamp: Date.now(),
+                        text: t('battleRoyaleWinner', {country: winner.name})
+                    });
+                    updateStatistics();
+                    renderCountries();
+                    return;
+                }
+                alive.sort(() => Math.random() - 0.5);
+                const [c1, c2] = alive.slice(0,2);
+                const loser = Math.random() < 0.5 ? c1 : c2;
+                const original = gameState.countries.find(c => c.id === loser.id);
+                if (original) original.eliminated = true;
+                alive = alive.filter(c => c.id !== loser.id);
+                elements.battleRoyaleResult.textContent = t('eliminated', {country: loser.name});
+                updateStatistics();
+                renderCountries();
+            }, 1000);
+        });
+
         // Language change
         elements.languageSelect.addEventListener('change', (e) => {
             currentLang = e.target.value;
@@ -1398,7 +1473,9 @@
             gameState.countries.forEach(country => {
                 country.status = 'peace';
                 country.xp = Math.floor(Math.random() * 100);
+                country.eliminated = false;
             });
+            elements.battleRoyaleResult.textContent = '';
             // Keep Algeria and Palestine at 100 XP
             const algeria = gameState.countries.find(c => c.name === 'Algérie');
             const palestine = gameState.countries.find(c => c.name === 'Palestine');
